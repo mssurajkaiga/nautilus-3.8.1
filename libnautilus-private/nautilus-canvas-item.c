@@ -1973,6 +1973,8 @@ nautilus_canvas_item_get_max_text_width (NautilusCanvasItem *item)
 
 	canvas_item = EEL_CANVAS_ITEM (item);
 
+	if ((item->details->icon_rect.x1 - item->details->icon_rect.x0) > MAX_TEXT_WIDTH_STANDARD)
+		return 	(item->details->icon_rect.x1 - item->details->icon_rect.x0) * canvas_item->canvas->pixels_per_unit;
 	return MAX_TEXT_WIDTH_STANDARD * canvas_item->canvas->pixels_per_unit;
 }
 
