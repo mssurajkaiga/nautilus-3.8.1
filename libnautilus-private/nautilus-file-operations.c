@@ -4061,7 +4061,9 @@ copy_move_file (CopyMoveJob *copy_job,
 	GFile *dest, *new_dest;
 	GError *error;
 	GFileCopyFlags flags;
+	GFileInfo *inf;
 	char *primary, *secondary, *details;
+	const char *disp_name;
 	int response;
 	ProgressData pdata;
 	gboolean would_recurse, is_merge;
@@ -4093,6 +4095,15 @@ copy_move_file (CopyMoveJob *copy_job,
 		dest = get_target_file (src, dest_dir, *dest_fs_type, same_fs);
 	}
 
+	inf = g_file_query_info (src,
+				G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME,
+				0, NULL, NULL);
+	if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)) {
+		disp_name = g_file_info_get_attribute_string (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME);
+	}
+	if(!overwrite) {
+		dest = g_file_new_for_uri(g_strconcat((char *)g_file_get_uri(dest), "_unfinished", NULL));
+	}
 	/* Don't allow recursive move/copy into itself.  
 	 * (We would get a file system error if we proceeded but it is nicer to 
 	 * detect and report it at this level) */
@@ -4228,6 +4239,11 @@ copy_move_file (CopyMoveJob *copy_job,
 									    src, dest);
 		}
 
+		if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)) {
+			g_file_set_display_name (dest, disp_name, NULL, error);
+		}
+
+		g_object_unref(inf);
 		g_object_unref (dest);
 		return;
 	}
@@ -4406,6 +4422,11 @@ copy_move_file (CopyMoveJob *copy_job,
 			goto retry;
 		}
 
+		if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)) {
+			g_file_set_display_name (dest, disp_name, NULL, error);
+		}
+
+		g_object_unref(inf);
 		g_object_unref (dest);
 		return;
 	}
@@ -4446,6 +4467,10 @@ copy_move_file (CopyMoveJob *copy_job,
 	}
  out:
 	*skipped_file = TRUE; /* Or aborted, but same-same */
+ 	if(g_file_query_exists (src, NULL) && g_file_query_exists(dest, NULL)){
+ 		g_file_delete(dest, NULL, NULL);
+ 	}
+ 	g_object_unref(inf);
 	g_object_unref (dest);
 }
 
