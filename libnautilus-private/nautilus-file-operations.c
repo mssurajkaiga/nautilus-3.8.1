@@ -4096,12 +4096,12 @@ copy_move_file (CopyMoveJob *copy_job,
 	}
 
 	inf = g_file_query_info (src,
-				  G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME,
-				  0, NULL, NULL);
-	if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)){
-			disp_name = g_file_info_get_attribute_string (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME);
-		}
-	if(!overwrite){
+				G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME,
+				0, NULL, NULL);
+	if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)) {
+		disp_name = g_file_info_get_attribute_string (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME);
+	}
+	if(!overwrite) {
 		dest = g_file_new_for_uri(g_strconcat((char *)g_file_get_uri(dest), "_unfinished", NULL));
 	}
 	/* Don't allow recursive move/copy into itself.  
@@ -4239,7 +4239,7 @@ copy_move_file (CopyMoveJob *copy_job,
 									    src, dest);
 		}
 
-		if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)){
+		if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)) {
 			g_file_set_display_name (dest, disp_name, NULL, error);
 		}
 
@@ -4422,6 +4422,11 @@ copy_move_file (CopyMoveJob *copy_job,
 			goto retry;
 		}
 
+		if (g_file_info_has_attribute (inf, G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME)) {
+			g_file_set_display_name (dest, disp_name, NULL, error);
+		}
+
+		g_object_unref(inf);
 		g_object_unref (dest);
 		return;
 	}
